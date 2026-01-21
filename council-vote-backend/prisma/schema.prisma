@@ -1,0 +1,133 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  MODERATOR
+  CANDIDATE
+}
+
+enum PositionStatus {
+  PENDING
+  APPROVED
+  LIVE
+  CLOSED
+}
+
+enum ProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ModeratorActionType {
+  APPROVE
+  REJECT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CANDIDATE)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  createdPositions    Position[]           @relation("CreatedPositions")
+  candidateProposals  CandidateProposal[]
+  moderatorActions    ModeratorAction[]
+  voteStatus          VoteStatus[]
+
+  @@map("users")
+}
+
+model Position {
+  id                  String         @id @default(uuid())
+  name                String
+  description         String
+  applicationEndDate  DateTime       @map("application_end_date")
+  votingStartDate     DateTime?      @map("voting_start_date")
+  votingEndDate       DateTime?      @map("voting_end_date")
+  createdBy           String         @map("created_by")
+  status              PositionStatus @default(PENDING)
+  resultsPublished    Boolean        @default(false) @map("results_published")
+  createdAt           DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  creator             User                  @relation("CreatedPositions", fields: [createdBy], references: [id])
+  candidateProposals  CandidateProposal[]
+  votes               Vote[]
+  voteStatus          VoteStatus[]
+
+  @@map("positions")
+}
+
+model CandidateProposal {
+  id         String         @id @default(uuid())
+  positionId String         @map("position_id")
+  userId     String         @map("user_id")
+  manifesto  String
+  status     ProposalStatus @default(PENDING)
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  position         Position          @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moderatorActions ModeratorAction[]
+  votes            Vote[]
+
+  @@unique([positionId, userId])
+  @@map("candidate_proposals")
+}
+
+model ModeratorAction {
+  id         String               @id @default(uuid())
+  proposalId String               @map("proposal_id")
+  moderatorId String              @map("moderator_id")
+  action     ModeratorActionType
+  createdAt  DateTime             @default(now()) @map("created_at")
+
+  // Relations
+  proposal  CandidateProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  moderator User              @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, moderatorId])
+  @@map("moderator_actions")
+}
+
+model Vote {
+  id          String   @id @default(uuid())
+  positionId  String   @map("position_id")
+  candidateId String   @map("candidate_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  position  Position          @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  candidate CandidateProposal @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("votes")
+}
+
+model VoteStatus {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  positionId String  @map("position_id")
+  hasVoted  Boolean  @default(false) @map("has_voted")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, positionId])
+  @@map("vote_status")
+}
