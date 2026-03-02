@@ -2,6 +2,9 @@
 
 A secure, role-based voting platform for campus elections built with React Native and Node.js. This system enables transparent candidate proposals, multi-moderator approval workflows, anonymous voting, and result publication.
 
+## Demo Video
+https://drive.google.com/file/d/18LmfinSIrMtvOKV9I953eeIvAd-29hp7/view?usp=sharing
+
 ---
 
 ## 📋 Problem Statement
