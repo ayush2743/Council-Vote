@@ -35,12 +35,11 @@ export default function TabLayout() {
             backgroundColor: COLORS.white,
             borderTopColor: COLORS.borderLight,
             borderTopWidth: 1,
-            height: 90,
-            paddingBottom: 8,
             paddingTop: 8,
+            marginBottom: 8,
           },
           tabBarLabelStyle: {
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: '600',
           },
         }}
@@ -116,12 +115,12 @@ export default function TabLayout() {
             backgroundColor: COLORS.white,
             borderTopColor: COLORS.borderLight,
             borderTopWidth: 1,
-            height: 90,
+            marginBottom: 8,
             paddingBottom: 8,
             paddingTop: 8,
           },
           tabBarLabelStyle: {
-            fontSize: 12,
+            fontSize: 10,
             fontWeight: '600',
           },
         }}
@@ -196,12 +195,12 @@ export default function TabLayout() {
           backgroundColor: COLORS.white,
           borderTopColor: COLORS.borderLight,
           borderTopWidth: 1,
-          height: 90,
+          marginBottom: 8,
           paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: '600',
         },
       }}
