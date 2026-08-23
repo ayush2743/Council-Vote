@@ -128,45 +128,34 @@ router.post('/vote', verifyToken, async (req, res) => {
       return res.status(403).json({ error: 'Voting period is not active' });
     }
 
-    // Check if user already voted for this position
-    const voteStatus = await prisma.voteStatus.findUnique({
-      where: {
-        userId_positionId: {
+
+    await prisma.$transaction(async (tx) => {
+
+      const claimed = await tx.voteStatus.updateMany({
+        where: {
           userId: req.user.id,
           positionId: position.id,
+          hasVoted: false,
         },
-      },
-    });
+        data: { hasVoted: true },
+      });
 
-    if (voteStatus && voteStatus.hasVoted) {
-      return res.status(409).json({ error: 'You have already voted for this position' });
-    }
+      if (claimed.count === 0) {
+   
+        await tx.voteStatus.create({
+          data: {
+            userId: req.user.id,
+            positionId: position.id,
+            hasVoted: true,
+          },
+        });
+      }
 
-    // Create vote and update vote status in a transaction
-    await prisma.$transaction(async (tx) => {
-      // Create anonymous vote
+      // Only the request that won the claim reaches this line.
       await tx.vote.create({
         data: {
           positionId: position.id,
           candidateId: candidate.id,
-        },
-      });
-
-      // Update or create vote status
-      await tx.voteStatus.upsert({
-        where: {
-          userId_positionId: {
-            userId: req.user.id,
-            positionId: position.id,
-          },
-        },
-        update: {
-          hasVoted: true,
-        },
-        create: {
-          userId: req.user.id,
-          positionId: position.id,
-          hasVoted: true,
         },
       });
     });
